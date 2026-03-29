@@ -214,18 +214,33 @@ class Renderer {
   }
 
   fileList(row, col, width, height, files, selectedIndex, scrollOffset) {
+    const totalFiles = files.length;
+    const hasScroll = totalFiles > height;
+    const contentWidth = hasScroll ? width - 2 : width;
+
+    let scrollThumbStart = 0;
+    let scrollThumbEnd = 0;
+    if (hasScroll) {
+      const thumbSize = Math.max(1, Math.round((height / totalFiles) * height));
+      scrollThumbStart = Math.round((scrollOffset / totalFiles) * height);
+      scrollThumbEnd = Math.min(height - 1, scrollThumbStart + thumbSize - 1);
+    }
+
     for (let i = 0; i < height; i++) {
       const fileIdx = scrollOffset + i;
       this.moveTo(row + i, col);
 
-      if (fileIdx >= files.length) {
-        this.write(' '.repeat(width));
+      if (fileIdx >= totalFiles) {
+        this.write(' '.repeat(contentWidth));
+        if (hasScroll) {
+          this.write(`${C.brightBlack} ${C.reset}`);
+        }
         continue;
       }
 
       const file = files[fileIdx];
       const isSelected = fileIdx === selectedIndex;
-      const maxNameLen = width - 6;
+      const maxNameLen = contentWidth - 6;
       let name = file.name.length > maxNameLen
         ? file.name.substring(0, maxNameLen - 3) + '...'
         : file.name;
@@ -234,14 +249,32 @@ class Renderer {
         : file.isAudio ? ICONS.file
         : '📄';
 
+      const pad = Math.max(0, contentWidth - name.length - 6);
+
       if (isSelected) {
-        this.write(`${C.bgBlue}${C.brightWhite}${C.bold} ${ICONS.arrow} ${icon} ${name}${' '.repeat(Math.max(0, width - name.length - 6))}${C.reset}`);
+        this.write(`${C.bgBlue}${C.brightWhite}${C.bold} ${ICONS.arrow} ${icon} ${name}${' '.repeat(pad)}${C.reset}`);
       } else {
         const clr = file.isDirectory ? C.brightYellow
           : file.isAudio ? C.brightWhite
           : C.brightBlack;
-        this.write(`${clr}   ${icon} ${name}${' '.repeat(Math.max(0, width - name.length - 6))}${C.reset}`);
+        this.write(`${clr}   ${icon} ${name}${' '.repeat(pad)}${C.reset}`);
       }
+
+      if (hasScroll) {
+        if (i >= scrollThumbStart && i <= scrollThumbEnd) {
+          this.write(`${C.brightCyan}${ICONS.block.full}${C.reset}`);
+        } else {
+          this.write(`${C.brightBlack}│${C.reset}`);
+        }
+      }
+    }
+
+    if (hasScroll) {
+      const currentPage = Math.floor(scrollOffset / height) + 1;
+      const totalPages = Math.ceil(totalFiles / height);
+      const pageStr = `${C.brightBlack} pg ${currentPage}/${totalPages} ${C.reset}`;
+      this.moveTo(row + height, col + contentWidth - 12);
+      this.write(pageStr);
     }
   }
 
@@ -276,22 +309,36 @@ class Renderer {
   }
 
   helpBar(row, col, width) {
-    const keys = [
+    const row1Keys = [
       [`${C.bgBlue}${C.brightWhite} ↑↓ ${C.reset}`, 'Navigate'],
+      [`${C.bgBlue}${C.brightWhite} PgUp/Dn ${C.reset}`, 'Page'],
+      [`${C.bgBlue}${C.brightWhite} Home/End ${C.reset}`, 'Jump'],
       [`${C.bgBlue}${C.brightWhite} Enter ${C.reset}`, 'Play'],
       [`${C.bgBlue}${C.brightWhite} Space ${C.reset}`, 'Pause'],
       [`${C.bgBlue}${C.brightWhite} S ${C.reset}`, 'Stop'],
+    ];
+    const row2Keys = [
+      [`${C.bgBlue}${C.brightWhite} N ${C.reset}`, 'Next'],
+      [`${C.bgBlue}${C.brightWhite} P ${C.reset}`, 'Prev'],
       [`${C.bgBlue}${C.brightWhite} ←→ ${C.reset}`, 'Volume'],
+      [`${C.bgBlue}${C.brightWhite} R ${C.reset}`, 'Repeat'],
+      [`${C.bgBlue}${C.brightWhite} X ${C.reset}`, 'Shuffle'],
       [`${C.bgBlue}${C.brightWhite} Q ${C.reset}`, 'Quit'],
     ];
 
-    let line = '';
-    for (const [key, label] of keys) {
-      line += `${key} ${C.brightWhite}${label}${C.reset}  `;
+    let line1 = '';
+    for (const [key, label] of row1Keys) {
+      line1 += `${key} ${C.brightWhite}${label}${C.reset}  `;
+    }
+    let line2 = '';
+    for (const [key, label] of row2Keys) {
+      line2 += `${key} ${C.brightWhite}${label}${C.reset}  `;
     }
 
     this.moveTo(row, col);
-    this.write(this.centerText(line, width));
+    this.write(this.centerText(line1, width));
+    this.moveTo(row + 1, col);
+    this.write(this.centerText(line2, width));
   }
 
   statusMessage(row, col, width, message, type) {

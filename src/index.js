@@ -91,6 +91,24 @@ class MusicPlayer {
           this.navigateDown();
           break;
 
+        case '\x1b[5~':
+          this.pageUp();
+          break;
+
+        case '\x1b[6~':
+          this.pageDown();
+          break;
+
+        case '\x1b[H':
+        case '\x1b[1~':
+          this.goHome();
+          break;
+
+        case '\x1b[F':
+        case '\x1b[4~':
+          this.goEnd();
+          break;
+
         case '\x1b[C':
           this.volumeUp();
           break;
@@ -142,7 +160,6 @@ class MusicPlayer {
   navigateUp() {
     if (this.selectedIndex > 0) {
       this.selectedIndex--;
-      const listHeight = this.getListHeight();
       if (this.selectedIndex < this.scrollOffset) {
         this.scrollOffset = this.selectedIndex;
       }
@@ -159,8 +176,33 @@ class MusicPlayer {
     }
   }
 
+  pageUp() {
+    const listHeight = this.getListHeight();
+    this.selectedIndex = Math.max(0, this.selectedIndex - listHeight);
+    this.scrollOffset = Math.max(0, this.scrollOffset - listHeight);
+  }
+
+  pageDown() {
+    const listHeight = this.getListHeight();
+    const maxIdx = this.files.length - 1;
+    this.selectedIndex = Math.min(maxIdx, this.selectedIndex + listHeight);
+    const maxScroll = Math.max(0, this.files.length - listHeight);
+    this.scrollOffset = Math.min(maxScroll, this.scrollOffset + listHeight);
+  }
+
+  goHome() {
+    this.selectedIndex = 0;
+    this.scrollOffset = 0;
+  }
+
+  goEnd() {
+    const listHeight = this.getListHeight();
+    this.selectedIndex = this.files.length - 1;
+    this.scrollOffset = Math.max(0, this.files.length - listHeight);
+  }
+
   getListHeight() {
-    return Math.max(5, this.renderer.height - 20);
+    return Math.max(5, this.renderer.height - 22);
   }
 
   selectItem() {
@@ -327,9 +369,9 @@ class MusicPlayer {
     this.renderer.write(`${C.brightYellow}${ICONS.folder} ${C.brightWhite}${dirDisplay}${C.reset}${' '.repeat(Math.max(0, width - dirDisplay.length - 6))}`);
     row += 1;
 
-    const listHeight = Math.max(3, height - row - 4);
+    const listHeight = Math.max(3, height - row - 5);
     this.renderer.fileList(row, 2, width - 3, listHeight, this.files, this.selectedIndex, this.scrollOffset);
-    row += listHeight;
+    row += listHeight + 1;
 
     this.renderer.moveTo(row, 1);
     this.renderer.write(`${C.brightBlack}${'─'.repeat(width)}${C.reset}`);
@@ -341,8 +383,9 @@ class MusicPlayer {
     this.renderer.statusMessage(row, 3, width - 4, `${this.statusMsg.text}  ${C.brightBlack}(${countStr})`, this.statusMsg.type);
     row += 1;
 
-    if (row < height) {
+    if (row + 1 < height) {
       this.renderer.helpBar(row, 1, width);
+      row += 2;
     }
   }
 }
