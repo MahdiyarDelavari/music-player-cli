@@ -230,12 +230,16 @@ class Renderer {
         ? file.name.substring(0, maxNameLen - 3) + '...'
         : file.name;
 
-      const icon = file.isDirectory ? ICONS.folder : ICONS.file;
+      const icon = file.isDirectory ? ICONS.folder
+        : file.isAudio ? ICONS.file
+        : '📄';
 
       if (isSelected) {
         this.write(`${C.bgBlue}${C.brightWhite}${C.bold} ${ICONS.arrow} ${icon} ${name}${' '.repeat(Math.max(0, width - name.length - 6))}${C.reset}`);
       } else {
-        const clr = file.isDirectory ? C.brightYellow : C.brightWhite;
+        const clr = file.isDirectory ? C.brightYellow
+          : file.isAudio ? C.brightWhite
+          : C.brightBlack;
         this.write(`${clr}   ${icon} ${name}${' '.repeat(Math.max(0, width - name.length - 6))}${C.reset}`);
       }
     }

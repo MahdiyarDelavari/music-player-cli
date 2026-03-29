@@ -62,7 +62,7 @@ class MusicPlayer {
   }
 
   buildPlaylist() {
-    this.playlist = this.files.filter(f => !f.isDirectory);
+    this.playlist = this.files.filter(f => f.isAudio);
   }
 
   setupInput() {
@@ -170,6 +170,8 @@ class MusicPlayer {
     if (item.isDirectory) {
       this.loadDirectory(item.path);
       this.statusMsg = { text: `Opened: ${path.basename(item.path)}`, type: 'info' };
+    } else if (!item.isAudio) {
+      this.statusMsg = { text: `Not an audio file: ${item.name}`, type: 'warning' };
     } else {
       this.playFile(item);
     }
@@ -334,7 +336,8 @@ class MusicPlayer {
     row += 1;
 
     const audioCount = this.playlist.length;
-    const countStr = `${audioCount} audio file${audioCount !== 1 ? 's' : ''}`;
+    const totalCount = this.files.length - 1;
+    const countStr = `${totalCount} items, ${audioCount} audio`;
     this.renderer.statusMessage(row, 3, width - 4, `${this.statusMsg.text}  ${C.brightBlack}(${countStr})`, this.statusMsg.type);
     row += 1;
 

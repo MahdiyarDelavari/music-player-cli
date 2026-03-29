@@ -20,6 +20,7 @@ function scanDirectory(dirPath) {
       name: '..',
       path: path.resolve(dirPath, '..'),
       isDirectory: true,
+      isAudio: false,
       ext: '',
     });
 
@@ -36,14 +37,17 @@ function scanDirectory(dirPath) {
           name: entry.name,
           path: fullPath,
           isDirectory: true,
+          isAudio: false,
           ext: '',
         });
-      } else if (isAudioFile(entry.name)) {
+      } else {
+        const ext = path.extname(entry.name).toLowerCase();
         files.push({
           name: entry.name,
           path: fullPath,
           isDirectory: false,
-          ext: path.extname(entry.name).toLowerCase(),
+          isAudio: isAudioFile(entry.name),
+          ext: ext,
         });
       }
     }
@@ -57,6 +61,7 @@ function scanDirectory(dirPath) {
       name: '..',
       path: path.resolve(dirPath, '..'),
       isDirectory: true,
+      isAudio: false,
       ext: '',
     }];
   }
