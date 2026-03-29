@@ -1,0 +1,14 @@
+{
+  "name": "p8-music-player-cli",
+  "version": "1.0.0",
+  "description": "A rich CLI music player built with pure Node.js — zero npm dependencies. Cross-platform (macOS, Windows, Linux).",
+  "main": "src/index.js",
+  "bin": {
+    "p8-music": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": ["music", "player", "cli", "terminal", "tui", "node"],
+  "license": "MIT"
+}
