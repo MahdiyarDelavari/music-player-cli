@@ -23,7 +23,7 @@ A feature-rich, beautiful Command Line Interface (CLI) music player built with *
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/p8-music-player-cli.git
+git clone https://github.com/MahdiyarDelavari/p8-music-player-cli.git
 cd p8-music-player-cli
 ```
 
